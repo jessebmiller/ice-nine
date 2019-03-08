@@ -1,0 +1,8 @@
+[package]
+name = "IceNine"
+version = "0.1.0"
+authors = ["Jesse B. Miller <jesse@jessebmiller.com>"]
+edition = "2018"
+
+[dependencies]
+termion = "*"
