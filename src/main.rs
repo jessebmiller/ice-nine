@@ -33,8 +33,8 @@ fn publish<I, T>(iter: I) -> Sender<Sender<T>> where
     let subscription_listener = shared_subscriptions.clone();
     thread::spawn(move || {
         for sub in rx.iter() {
-            let mut subscriptions = subscription_listener.lock().unwrap();
-            subscriptions.push(sub);
+            let mut subs = subscription_listener.lock().unwrap();
+            subs.push(sub);
         }
     });
     return tx;
@@ -56,18 +56,21 @@ fn parse_command(k: Key) -> String {
 
 fn main() {
     let stdin = stdin();
-    let mut stdout = stdout().into_raw_mode().unwrap();
     let commands = publish(stdin.keys().map(|k| {k.unwrap()}));
 
     let sub1 = subscribe(&commands);
+    let mut out1 = stdout().into_raw_mode().unwrap();
     thread::spawn(move || {
         for k in sub1.iter() {
-            println!("one-{}", parse_command(k));
+            write!(&mut out1, "one-{}\r\n", parse_command(k));
+            out1.flush().unwrap();
         }
     });
 
     let sub2 = subscribe(&commands);
+    let mut out2 = stdout().into_raw_mode().unwrap();
     for k in sub2.iter() {
-        println!("two-{}", parse_command(k));
+        write!(&mut out2, "two-{}\r\n", parse_command(k));
+        out2.flush().unwrap();
     }
 }
